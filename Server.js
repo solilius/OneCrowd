@@ -21,10 +21,17 @@ db.serialize();
 app.use(express.static(__dirname + '/'))
 
 // Solve the Access-Control-Allow-Origin problem
-app.use(function(req, res, next) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-    next();
+app.all('*', function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'PUT, GET, POST, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'accept, content-type, x-parse-application-id, x-parse-rest-api-key, x-parse-session-token');
+     // intercept OPTIONS method
+    if ('OPTIONS' == req.method) {
+      res.send(200);
+    }
+    else {
+      next();
+    }
 });
 
 //==================== API ====================//
@@ -168,5 +175,5 @@ function getTime(){
 app.set('port', (process.env.PORT || 5000));
 
 http.listen(app.get('port'), function(){
-  console.log(new Date() + '\nOne Crowd server started\nPort: '+ port );
+  console.log(new Date() + '\nOne Crowd server started\nPort: '+ app.get('port') );
 });
