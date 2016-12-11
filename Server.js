@@ -4,8 +4,8 @@
 
 //================= VARIABLES ==================//
 
-var app = require('express')();
 var express = require('express');
+var app = express();
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var fs = require('fs');
@@ -165,7 +165,8 @@ function getTime(){
 }
 
 //=============== START THE SERVER =============//
-var port = 80;
-http.listen(port, function(){
+app.set('port', (process.env.PORT || 5000));
+
+http.listen(app.get('port'), function(){
   console.log(new Date() + '\nOne Crowd server started\nPort: '+ port );
 });
