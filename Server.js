@@ -12,6 +12,7 @@ var fs = require('fs');
 var sql = require('sqlite3').verbose();
 var dbFile = __dirname + '/' + 'OneCrowd.db';
 var db = new sql.Database(dbFile);
+var base64 = require('file-base64');
 db.serialize();
 
 
@@ -96,9 +97,10 @@ io.on('connection', function(socket){
     
     data.date = getTime();
     if(data.type != "text"){
-      var path =  __dirname + "\\Media\\" + data.room + "\\" + data.sendertype + " Media\\" + data.type + "\\" + Date.now().toString() +data.type + getEnding(data.type);
-      // convert to file
-      SaveFile(path, data.content);
+      //var path =  __dirname + "/Media/Crowds Media/" + data.room + "/" + data.sendertype + " Media/" + data.type + "/" + Date.now().toString() +data.type + getEnding(data.type);
+      var path =  __dirname + "/Media/" + Date.now().toString() +data.type + getEnding(data.type);
+      // maybe just save as txt to save time and space
+      ConvertBase64(path, data.content);
       data.content = path;
     }
 
@@ -117,11 +119,19 @@ io.on('connection', function(socket){
 
 // ============= PRIVATE METHODS ==============//
 
+
+// Convert base 64 to file and save to local path
+function ConvertBase64(path, content) {
+    base64.decode(content, path, function(err, output) {
+      console.log("success");
+    })
+}
+
 // Get the file type
 function getEnding(type){
   switch(type){
     case 'picture':
-      return '.jpg';
+      return '.jpeg';
     case 'video':
       return '.mp4';
     case 'audio':
@@ -150,7 +160,7 @@ function AddToDb(query){
 }
 
 // Save media file 
-function SaveFile(path, type, file){
+function SaveFile(path, file){
     fs.writeFile(path, file,  function(err) {
       if (err) {
         return console.error(err);
