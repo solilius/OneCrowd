@@ -95,9 +95,8 @@ io.on('connection', function(socket){
   socket.on('chat message', function(data){
     
     data.date = getTime();
-
     if(data.type != "text"){
-      var path =  __dirname + "\\Media\\" + data.sendertype + " Media\\" + Date.now().toString() +data.type + getEnding(data.type);
+      var path =  __dirname + "\\Media\\" + data.room + "\\" + data.sendertype + " Media\\" + data.type + "\\" + Date.now().toString() +data.type + getEnding(data.type);
       // convert to file
       SaveFile(path, data.content);
       data.content = path;
@@ -172,7 +171,7 @@ function getTime(){
 }
 
 //=============== START THE SERVER =============//
-app.set('port', (process.env.PORT || 5000));
+app.set('port', (process.env.PORT || 80));
 
 http.listen(app.get('port'), function(){
   console.log(new Date() + '\nOne Crowd server started\nPort: '+ app.get('port') );
