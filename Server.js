@@ -13,14 +13,11 @@ var sql = require('sqlite3').verbose();
 var dbFile = __dirname + '/' + 'OneCrowd.db';
 var db = new sql.Database(dbFile);
 var base64 = require('file-base64');
-db.serialize();
-
 
 //=============== FIXES AND TWEAKS =============//
 
 // Help for loading resources from server
 app.use(express.static(__dirname + '/'))
-
 // Solve the Access-Control-Allow-Origin problem
 app.all('*', function(req, res, next) {
     res.header('Access-Control-Allow-Origin', '*');
@@ -64,6 +61,13 @@ app.get('/crowd/:crowd/:sender/:type', function(req, res){
     getRowsFromDB(query, callback);
 });
 
+// Manager - Return media files
+app.get('/manager/:crowd/:type', function(req, res){
+  fs.readdir(__dirname + '/Media/Crowds/' + req.params.crowd + '/manager-media/'+  req.params.type, function (err, files) { 
+    res.send(getmMediaList(files, req.params.crowd, req.params.type));
+  });
+});
+
 //================== SOCKETS ====================//
 
 // Socket testing
@@ -74,6 +78,7 @@ app.get('/', function(req, res){
 app.get('/2', function(req, res){
   res.sendfile('test2.html');
 });
+
 
 // Sockets handeling
 io.on('connection', function(socket){
@@ -97,11 +102,10 @@ io.on('connection', function(socket){
     
     data.date = getTime();
     if(data.type != "text"){
-      //var path =  __dirname + "/Media/Crowds Media/" + data.room + "/" + data.sendertype + " Media/" + data.type + "/" + Date.now().toString() +data.type + getEnding(data.type);
-      var path =  __dirname + "/Media/" + Date.now().toString() +data.type + getEnding(data.type);
-      // maybe just save as txt to save time and space
-      ConvertBase64(path, data.content);
-      data.content = path;
+      var path =  "/Media/Crowds/" + data.room + "/" + data.sendertype + "-Media/" + data.type + "/";
+      var fileName =  Date.now().toString() + getEnding(data.type);
+      ConvertBase64(__dirname + path + fileName, data.content);
+      data.content = path + fileName;
     }
 
     //Save to db
@@ -119,12 +123,51 @@ io.on('connection', function(socket){
 
 // ============= PRIVATE METHODS ==============//
 
+// Get list of files and return path
+function getmMediaList(files, crowd, type){
+  var list =[];
+  switch (type) {
+    case 'picture':
+        for (var i = 0, len = files.length; i < len; i++) {
+           list.push('/Media/Crowds/' + crowd + '/manager-media/' + type + '/' + files[i]);
+          } 
+      break;
+  
+    case 'audio':
+          for (var i = 0, len = files.length; i < len; i++) { 
+            var item = new Object();
+            item.url = '/Media/Crowds/' + crowd + '/manager-media/' + type + '/' + files[i];
+            item.artist = crowd;
+            item.title = files[i].replace('.mp3', '');
+            item.art = '/Media/Crowds Profiles/' + crowd + ".png";
+           list.push(item);
+          } 
+
+      break;
+  }
+  return list;
+}
 
 // Convert base 64 to file and save to local path
 function ConvertBase64(path, content) {
     base64.decode(content, path, function(err, output) {
       console.log("success");
     })
+}
+
+
+// Make directories
+function MakeDirs(path){
+}
+
+// Save media file 
+function SaveFile(path, file){
+    fs.writeFile(path, file,  function(err) {
+      if (err) {
+        return console.error(err);
+      }
+    console.log("Data written successfully!");
+    });
 }
 
 // Get the file type
@@ -156,16 +199,6 @@ function AddToDb(query){
         if (err != null) {
             console.log(err);
         }
-    });
-}
-
-// Save media file 
-function SaveFile(path, file){
-    fs.writeFile(path, file,  function(err) {
-      if (err) {
-        return console.error(err);
-      }
-    console.log("Data written successfully!");
     });
 }
 
