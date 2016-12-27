@@ -64,7 +64,11 @@ app.get('/crowd/:crowd/:sender/:type', function(req, res){
 // Manager - Return media files
 app.get('/manager/:crowd/:type', function(req, res){
   fs.readdir(__dirname + '/Media/Crowds/' + req.params.crowd + '/manager-media/'+  req.params.type, function (err, files) { 
-    res.send(getmMediaList(files, req.params.crowd, req.params.type));
+    if (typeof files !== 'undefined' && files !== null){
+    res.send(getmMediaList(files, req.params.crowd, req.params.type)); 
+} else {
+    res.send()
+}
   });
 });
 
@@ -126,6 +130,7 @@ io.on('connection', function(socket){
 // Get list of files and return path
 function getmMediaList(files, crowd, type){
   var list =[];
+  
   switch (type) {
     case 'picture':
         for (var i = 0, len = files.length; i < len; i++) {
@@ -135,12 +140,12 @@ function getmMediaList(files, crowd, type){
   
     case 'audio':
           for (var i = 0, len = files.length; i < len; i++) { 
-            var item = new Object();
-            item.url = '/Media/Crowds/' + crowd + '/manager-media/' + type + '/' + files[i];
-            item.artist = crowd;
+
+            var item = new Object();     
+            item.url = '/Media/Crowds/' + crowd + '/Manager-Media/Audio/' + files[i];
+            //item.url = '/Media/' + files[i];
             item.title = files[i].replace('.mp3', '');
-            item.art = '/Media/Crowds Profiles/' + crowd + ".png";
-           list.push(item);
+            list.push(item);
           } 
 
       break;
@@ -154,7 +159,6 @@ function ConvertBase64(path, content) {
       console.log("success");
     })
 }
-
 
 // Make directories
 function MakeDirs(path){

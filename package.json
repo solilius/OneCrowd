@@ -15,6 +15,7 @@
     "express": "4.13.3",
     "file-base64": "^1.0.0",
     "mkdir-recursive": "^0.2.3",
+    "mp3-duration": "^1.0.10",
     "multer": "^1.2.0",
     "socket.io-stream": "^0.9.1"
   },
